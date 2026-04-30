@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jira-like Task Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>Team Task Board</h1>
+        <p class="subtitle">A simplified Jira-style Kanban tracker</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="exportCsvBtn" class="btn btn-secondary">Export CSV</button>
+        <button id="exportJsonBtn" class="btn btn-secondary">Export JSON</button>
+        <button id="openCreateTaskBtn" class="btn btn-primary">+ Add Task</button>
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <p>Total Issues</p>
+        <h2 id="totalIssues">0</h2>
+      </article>
+      <article class="summary-card">
+        <p>Open Issues</p>
+        <h2 id="openIssues">0</h2>
+      </article>
+      <article class="summary-card">
+        <p>Story Points</p>
+        <h2 id="storyPoints">0</h2>
+      </article>
+      <article class="summary-card">
+        <p>Hours Logged</p>
+        <h2 id="hoursLogged">0h</h2>
+      </article>
+    </section>
+
+    <section class="filters">
+      <div class="filter-group">
+        <label for="assigneeFilter">Assignee</label>
+        <select id="assigneeFilter">
+          <option value="all">All</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="priorityFilter">Priority</label>
+        <select id="priorityFilter">
+          <option value="all">All</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="typeFilter">Type</label>
+        <select id="typeFilter">
+          <option value="all">All</option>
+          <option value="feature">Feature</option>
+          <option value="bug">Bug</option>
+          <option value="task">Task</option>
+        </select>
+      </div>
+      <button id="clearFiltersBtn" class="btn btn-secondary">Clear Filters</button>
+    </section>
+
+    <main class="board" id="board">
+      <section class="column" data-status="todo">
+        <header class="column-header todo">
+          <h3>TO DO</h3>
+          <span class="count" id="count-todo">0</span>
+        </header>
+        <div class="column-body" id="todoColumn"></div>
+      </section>
+
+      <section class="column" data-status="in-progress">
+        <header class="column-header in-progress">
+          <h3>IN PROGRESS</h3>
+          <span class="count" id="count-in-progress">0</span>
+        </header>
+        <div class="column-body" id="in-progressColumn"></div>
+      </section>
+
+      <section class="column" data-status="in-review">
+        <header class="column-header in-review">
+          <h3>IN REVIEW</h3>
+          <span class="count" id="count-in-review">0</span>
+        </header>
+        <div class="column-body" id="in-reviewColumn"></div>
+      </section>
+
+      <section class="column" data-status="done">
+        <header class="column-header done">
+          <h3>DONE</h3>
+          <span class="count" id="count-done">0</span>
+        </header>
+        <div class="column-body" id="doneColumn"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="taskDialog" class="dialog">
+    <form id="taskForm">
+      <div class="dialog-head">
+        <h2 id="taskDialogTitle">Create Task</h2>
+        <button type="button" class="icon-btn" id="closeDialogBtn">x</button>
+      </div>
+      <input type="hidden" id="taskId">
+      <div class="form-grid">
+        <label>Task Title<input type="text" id="titleInput" required></label>
+        <label>Assignee Name<input type="text" id="assigneeInput" required></label>
+        <label>Target Date<input type="date" id="dateInput" required></label>
+        <label>Latest Update<textarea id="updateInput" rows="3" required></textarea></label>
+        <label>Priority
+          <select id="priorityInput" required>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </label>
+        <label>Story Points<input type="number" id="storyPointsInput" min="0" value="0"></label>
+        <label>Hours Logged<input type="number" id="hoursLoggedInput" min="0" step="0.5" value="0"></label>
+        <label>Type
+          <select id="typeInput" required>
+            <option value="feature">Feature</option>
+            <option value="bug">Bug</option>
+            <option value="task">Task</option>
+          </select>
+        </label>
+        <label>Status
+          <select id="statusInput" required>
+            <option value="todo">TO DO</option>
+            <option value="in-progress">IN PROGRESS</option>
+            <option value="in-review">IN REVIEW</option>
+            <option value="done">DONE</option>
+          </select>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" id="cancelTaskBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Task</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8"></script>
+  <script src="script.js?v=8"></script>
+</body>
+</html>
