@@ -112,6 +112,7 @@ const dom = {
   assigneeFilter: document.getElementById("assigneeFilter"),
   priorityFilter: document.getElementById("priorityFilter"),
   typeFilter: document.getElementById("typeFilter"),
+  tagFilter: document.getElementById("tagFilter"),
   clearFiltersBtn: document.getElementById("clearFiltersBtn"),
   exportCsvBtn: document.getElementById("exportCsvBtn"),
   exportJsonBtn: document.getElementById("exportJsonBtn"),
@@ -131,6 +132,7 @@ const dom = {
   storyPointsInput: document.getElementById("storyPointsInput"),
   hoursLoggedInput: document.getElementById("hoursLoggedInput"),
   typeInput: document.getElementById("typeInput"),
+  tagInput: document.getElementById("tagInput"),
   statusInput: document.getElementById("statusInput")
 };
 
@@ -360,6 +362,7 @@ async function onTaskFormSubmit(event) {
     storyPoints: Number(dom.storyPointsInput.value) || 0,
     hoursLogged: Number(dom.hoursLoggedInput.value) || 0,
     type: dom.typeInput.value,
+    tag: dom.tagInput.value
     status: dom.statusInput.value
   };
 
