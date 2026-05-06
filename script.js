@@ -8,6 +8,7 @@ const STATUS = {
   TODO: "todo",
   IN_PROGRESS: "in-progress",
   IN_REVIEW: "in-review",
+  BLOCKED: "blocked",
   DONE: "done"
 };
 
