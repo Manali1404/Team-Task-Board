@@ -10,7 +10,24 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app">
+  <section class="auth-shell" id="authShell">
+    <form class="auth-card" id="loginForm">
+      <h2>Team Login</h2>
+      <p class="auth-subtitle">Enter your shared team credentials to access the board.</p>
+      <label>
+        Username
+        <input type="text" id="usernameInput" required placeholder="team@yourcompany.com">
+      </label>
+      <label>
+        Password
+        <input type="password" id="passwordInput" required placeholder="••••••••">
+      </label>
+      <p class="auth-error" id="authError" aria-live="polite"></p>
+      <button type="submit" class="btn btn-primary auth-btn">Login</button>
+    </form>
+  </section>
+
+  <div class="app hidden" id="appShell">
     <header class="topbar">
       <div>
         <h1>Team Task Board</h1>
@@ -19,6 +36,7 @@
       <div class="topbar-actions">
         <button id="exportCsvBtn" class="btn btn-secondary">Export CSV</button>
         <button id="exportJsonBtn" class="btn btn-secondary">Export JSON</button>
+        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
         <button id="openCreateTaskBtn" class="btn btn-primary">+ Add Task</button>
       </div>
     </header>
@@ -150,6 +168,6 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8"></script>
-  <script src="script.js?v=8"></script>
+  <script src="script.js?v=10"></script>
 </body>
 </html>
