@@ -76,6 +76,7 @@ const state = {
     assignee: "all",
     priority: "all",
     type: "all"
+    tag: "all"
   },
   draggingTaskId: null
 };
