@@ -94,12 +94,14 @@ const dom = {
     [STATUS.TODO]: document.getElementById("todoColumn"),
     [STATUS.IN_PROGRESS]: document.getElementById("in-progressColumn"),
     [STATUS.IN_REVIEW]: document.getElementById("in-reviewColumn"),
+    [STATUS.BLOCKED]: document.getElementById("blockedColumn"),
     [STATUS.DONE]: document.getElementById("doneColumn")
   },
   counts: {
     [STATUS.TODO]: document.getElementById("count-todo"),
     [STATUS.IN_PROGRESS]: document.getElementById("count-in-progress"),
     [STATUS.IN_REVIEW]: document.getElementById("count-in-review"),
+    [STATUS.BLOCKED]: document.getElementById("count-blocked"),
     [STATUS.DONE]: document.getElementById("count-done")
   },
   totalIssues: document.getElementById("totalIssues"),
@@ -490,6 +492,7 @@ function statusLabel(status) {
     case STATUS.TODO: return "TO DO";
     case STATUS.IN_PROGRESS: return "IN PROGRESS";
     case STATUS.IN_REVIEW: return "IN REVIEW";
+    case STATUS.BLOCKED: return "BLOCKED";
     case STATUS.DONE: return "DONE";
     default: return status;
   }
