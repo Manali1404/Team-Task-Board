@@ -80,8 +80,15 @@ const state = {
 };
 
 let supabase = null;
+let realtimeChannel = null;
 
 const dom = {
+  authShell: document.getElementById("authShell"),
+  appShell: document.getElementById("appShell"),
+  loginForm: document.getElementById("loginForm"),
+  usernameInput: document.getElementById("usernameInput"),
+  passwordInput: document.getElementById("passwordInput"),
+  authError: document.getElementById("authError"),
   boardColumns: {
     [STATUS.TODO]: document.getElementById("todoColumn"),
     [STATUS.IN_PROGRESS]: document.getElementById("in-progressColumn"),
@@ -104,6 +111,7 @@ const dom = {
   clearFiltersBtn: document.getElementById("clearFiltersBtn"),
   exportCsvBtn: document.getElementById("exportCsvBtn"),
   exportJsonBtn: document.getElementById("exportJsonBtn"),
+  logoutBtn: document.getElementById("logoutBtn"),
   openCreateTaskBtn: document.getElementById("openCreateTaskBtn"),
   taskDialog: document.getElementById("taskDialog"),
   taskDialogTitle: document.getElementById("taskDialogTitle"),
@@ -127,8 +135,8 @@ initialize();
 async function initialize() {
   supabase = createSupabaseClient();
   wireEvents();
-  await loadTasksFromSupabase();
-  setupRealtimeSubscription();
+  if (!supabase) return;
+  await bootstrapAuth();
 }
 
 function createSupabaseClient() {
@@ -152,8 +160,12 @@ async function loadTasksFromSupabase() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error(error);
-    alert("Failed to load tasks from Supabase.");
+    console.error("Load tasks error:", error);
+    // If it's a 403 Forbidden, user is not authenticated
+    if (error.code === "403") {
+      console.warn("Not authenticated. Please login.");
+      return;
+    }
     state.tasks = [];
     render();
     return;
@@ -186,8 +198,7 @@ async function seedDemoData() {
 
   const { error } = await supabase.from("tasks").insert(rows);
   if (error) {
-    console.error(error);
-    alert("Failed to seed demo tasks.");
+    console.error("Seed demo data error:", error);
     return;
   }
 
@@ -196,7 +207,11 @@ async function seedDemoData() {
 
 function setupRealtimeSubscription() {
   if (!supabase) return;
-  supabase
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+  }
+
+  realtimeChannel = supabase
     .channel("shared-board-tasks")
     .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, async () => {
       await loadTasksFromSupabase();
@@ -205,6 +220,8 @@ function setupRealtimeSubscription() {
 }
 
 function wireEvents() {
+  dom.loginForm.addEventListener("submit", onLoginSubmit);
+  dom.logoutBtn.addEventListener("click", onLogoutClick);
   dom.openCreateTaskBtn.addEventListener("click", () => openCreateDialog());
   dom.exportCsvBtn.addEventListener("click", () => exportAsCsv());
   dom.exportJsonBtn.addEventListener("click", () => exportAsJson());
@@ -240,6 +257,89 @@ function wireEvents() {
     column.addEventListener("dragleave", onColumnDragLeave);
     column.addEventListener("drop", onColumnDrop);
   });
+}
+
+async function bootstrapAuth() {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error("Auth error:", error);
+    showAuthMessage("Could not verify login session.");
+    setAppVisibility(false);
+    return;
+  }
+
+  if (data?.session) {
+    await handleSignedInState();
+  } else {
+    setAppVisibility(false);
+  }
+
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === "SIGNED_IN" && session) {
+      await handleSignedInState();
+      return;
+    }
+
+    if (event === "SIGNED_OUT") {
+      state.tasks = [];
+      render();
+      setAppVisibility(false);
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+    }
+  });
+}
+
+async function onLoginSubmit(event) {
+  event.preventDefault();
+  showAuthMessage("");
+
+  const username = dom.usernameInput.value.trim();
+  const password = dom.passwordInput.value;
+
+  if (!username || !password) {
+    showAuthMessage("Username and password are required.");
+    return;
+  }
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: username,
+    password
+  });
+
+  if (error) {
+    console.error("Login error:", error);
+    showAuthMessage("Invalid credentials. Please retry.");
+    return;
+  }
+
+  dom.passwordInput.value = "";
+}
+
+async function onLogoutClick() {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error("Logout error:", error);
+    alert("Failed to logout.");
+  }
+}
+
+async function handleSignedInState() {
+  setAppVisibility(true);
+  showAuthMessage("");
+  await loadTasksFromSupabase();
+  setupRealtimeSubscription();
+}
+
+function setAppVisibility(isLoggedIn) {
+  dom.authShell.classList.toggle("hidden", isLoggedIn);
+  dom.appShell.classList.toggle("hidden", !isLoggedIn);
+}
+
+function showAuthMessage(message) {
+  dom.authError.textContent = message;
 }
 
 async function onTaskFormSubmit(event) {
@@ -281,7 +381,7 @@ async function onTaskFormSubmit(event) {
       .eq("id", taskData.id);
 
     if (error) {
-      console.error(error);
+      console.error("Update task error:", error);
       alert("Failed to update task.");
       return;
     }
@@ -300,7 +400,7 @@ async function onTaskFormSubmit(event) {
     });
 
     if (error) {
-      console.error(error);
+      console.error("Create task error:", error);
       alert("Failed to create task.");
       return;
     }
@@ -344,7 +444,7 @@ function closeDialog() {
 async function deleteTask(taskId) {
   const { error } = await supabase.from("tasks").delete().eq("id", taskId);
   if (error) {
-    console.error(error);
+    console.error("Delete task error:", error);
     alert("Failed to delete task.");
   }
 }
@@ -376,7 +476,7 @@ async function onColumnDrop(event) {
     .eq("id", state.draggingTaskId);
 
   if (error) {
-    console.error(error);
+    console.error("Drop task error:", error);
     alert("Failed to move task.");
     return;
   }
