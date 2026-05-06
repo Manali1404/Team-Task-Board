@@ -249,9 +249,14 @@ function wireEvents() {
     state.filters.type = event.target.value;
     renderBoard();
   });
+  dom.tagFilter.addEventListener("change", (event) => {
+    state.filters.tag = event.target.value;
+ renderBoard();
+});
 
   dom.clearFiltersBtn.addEventListener("click", () => {
-    state.filters = { assignee: "all", priority: "all", type: "all" };
+    state.filters = { assignee: "all", priority: "all", type: "all" , tag: "all" };
+    dom.assigneeFilter.value = "all";
     dom.assigneeFilter.value = "all";
     dom.priorityFilter.value = "all";
     dom.typeFilter.value = "all";
