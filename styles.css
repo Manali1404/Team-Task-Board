@@ -8,6 +8,7 @@
   --todo: #dce8ff;
   --progress: #ffe8c2;
   --review: #eadcff;
+  --blocked: #ffe0e0;
   --done: #d9f8e4;
   --danger: #d03b42;
 }
@@ -27,6 +28,49 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  width: min(420px, 96vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.auth-card h2 {
+  margin: 0;
+}
+
+.auth-subtitle {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.auth-btn {
+  margin-top: 6px;
+}
+
+.auth-error {
+  min-height: 1em;
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.88rem;
 }
 
 .topbar {
@@ -135,7 +179,7 @@ textarea {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
   gap: 14px;
 }
 
@@ -160,6 +204,7 @@ textarea {
 .column-header.todo { background: var(--todo); }
 .column-header.in-progress { background: var(--progress); }
 .column-header.in-review { background: var(--review); }
+.column-header.blocked { background: var(--blocked); }
 .column-header.done { background: var(--done); }
 
 .column-header h3 {
@@ -337,9 +382,15 @@ textarea {
   font-size: 0.9rem;
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1400px) {
   .board {
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  .board {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
 }
 
