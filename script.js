@@ -196,6 +196,7 @@ async function seedDemoData() {
     story_points: task.storyPoints,
     hours_logged: task.hoursLogged || 0,
     type: task.type,
+    tag: task.tag
     status: task.status
   }));
 
