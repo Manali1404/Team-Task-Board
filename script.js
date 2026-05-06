@@ -19,63 +19,14 @@ function createTaskId() {
   return `task-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-const demoTasks = [
-  {
-    id: createTaskId(),
-    title: "Design onboarding workflow",
-    assignee: "Aarav Singh",
-    targetDate: "2026-05-05",
-    latestUpdate: "Wireframes approved by product team.",
-    priority: "high",
-    storyPoints: 8,
-    hoursLogged: 10,
-    type: "feature",
-    status: STATUS.TODO
-  },
-  {
-    id: createTaskId(),
-    title: "Fix login token refresh bug",
-    assignee: "Mia Patel",
-    targetDate: "2026-05-02",
-    latestUpdate: "Reproduced issue in staging.",
-    priority: "high",
-    storyPoints: 5,
-    hoursLogged: 6.5,
-    type: "bug",
-    status: STATUS.IN_PROGRESS
-  },
-  {
-    id: createTaskId(),
-    title: "QA test payment retries",
-    assignee: "Noah Shah",
-    targetDate: "2026-05-04",
-    latestUpdate: "Pending final regression pass.",
-    priority: "medium",
-    storyPoints: 3,
-    hoursLogged: 4,
-    type: "task",
-    status: STATUS.IN_REVIEW
-  },
-  {
-    id: createTaskId(),
-    title: "Deploy analytics dashboard",
-    assignee: "Aarav Singh",
-    targetDate: "2026-04-28",
-    latestUpdate: "Live on production.",
-    priority: "low",
-    storyPoints: 2,
-    hoursLogged: 7,
-    type: "feature",
-    status: STATUS.DONE
-  }
-];
+const demoTasks = [];
 
 const state = {
   tasks: [],
   filters: {
     assignee: "all",
     priority: "all",
-    type: "all"
+    type: "all",
     tag: "all"
   },
   draggingTaskId: null
@@ -178,38 +129,13 @@ async function loadTasksFromSupabase() {
   }
 
   if (!data || data.length === 0) {
-    await seedDemoData();
+    state.tasks = [];
+    render();
     return;
   }
 
   state.tasks = data.map(mapDbTaskToUiTask);
   render();
-}
-
-async function seedDemoData() {
-  if (!supabase) return;
-
-  const rows = demoTasks.map((task) => ({
-    id: task.id,
-    title: task.title,
-    assignee: task.assignee,
-    target_date: task.targetDate,
-    latest_update: task.latestUpdate,
-    priority: task.priority,
-    story_points: task.storyPoints,
-    hours_logged: task.hoursLogged || 0,
-    type: task.type,
-    tag: task.tag
-    status: task.status
-  }));
-
-  const { error } = await supabase.from("tasks").insert(rows);
-  if (error) {
-    console.error("Seed demo data error:", error);
-    return;
-  }
-
-  await loadTasksFromSupabase();
 }
 
 function setupRealtimeSubscription() {
@@ -251,15 +177,15 @@ function wireEvents() {
   });
   dom.tagFilter.addEventListener("change", (event) => {
     state.filters.tag = event.target.value;
- renderBoard();
-});
+    renderBoard();
+  });
 
   dom.clearFiltersBtn.addEventListener("click", () => {
-    state.filters = { assignee: "all", priority: "all", type: "all" , tag: "all" };
-    dom.assigneeFilter.value = "all";
+    state.filters = { assignee: "all", priority: "all", type: "all", tag: "all" };
     dom.assigneeFilter.value = "all";
     dom.priorityFilter.value = "all";
     dom.typeFilter.value = "all";
+    dom.tagFilter.value = "all";
     renderBoard();
   });
 
@@ -367,7 +293,7 @@ async function onTaskFormSubmit(event) {
     storyPoints: Number(dom.storyPointsInput.value) || 0,
     hoursLogged: Number(dom.hoursLoggedInput.value) || 0,
     type: dom.typeInput.value,
-    tag: dom.tagInput.value
+    tag: dom.tagInput.value,
     status: dom.statusInput.value
   };
 
@@ -389,6 +315,7 @@ async function onTaskFormSubmit(event) {
         story_points: taskData.storyPoints,
         hours_logged: taskData.hoursLogged,
         type: taskData.type,
+        tag: taskData.tag,
         status: taskData.status
       })
       .eq("id", taskData.id);
@@ -409,6 +336,7 @@ async function onTaskFormSubmit(event) {
       story_points: taskData.storyPoints,
       hours_logged: taskData.hoursLogged,
       type: taskData.type,
+      tag: taskData.tag,
       status: taskData.status
     });
 
@@ -429,6 +357,7 @@ function openCreateDialog() {
   dom.storyPointsInput.value = 0;
   dom.hoursLoggedInput.value = 0;
   dom.statusInput.value = STATUS.TODO;
+  dom.tagInput.value = "Internal";
   showTaskDialog();
 }
 
@@ -446,6 +375,7 @@ function openEditDialog(taskId) {
   dom.storyPointsInput.value = task.storyPoints ?? 0;
   dom.hoursLoggedInput.value = task.hoursLogged ?? 0;
   dom.typeInput.value = task.type || "task";
+  dom.tagInput.value = task.tag || "Internal";
   dom.statusInput.value = task.status;
   showTaskDialog();
 }
@@ -523,10 +453,8 @@ function renderFilterOptions() {
     assignees.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")
   }`;
   dom.tagFilter.innerHTML = `<option value="all">All Tags</option>${
- tags.map((tag) =>
-   `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`
- ).join("")
-}`;
+    tags.map((tag) => `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`).join("")
+  }`;
   dom.assigneeFilter.value = assignees.includes(selected) ? selected : "all";
   state.filters.assignee = dom.assigneeFilter.value;
 }
@@ -536,7 +464,7 @@ function passesFilters(task) {
   const byPriority = state.filters.priority === "all" || task.priority === state.filters.priority;
   const byType = state.filters.type === "all" || task.type === state.filters.type;
   const byTag = state.filters.tag === "all" || task.tag === state.filters.tag;
-return byAssignee && byPriority && byType;
+  return byAssignee && byPriority && byType && byTag;
 }
 
 function renderBoard() {
@@ -568,7 +496,7 @@ function getFilteredTasks() {
 
 function renderSummary() {
   const total = state.tasks.length;
-  const open = state.tasks.filter((task) => task.status !== STATUS.DONE).length;
+  const open = state.tasks.filter((task) => task.status !== STATUS.DONE && task.status !== STATUS.BLOCKED).length;
   const storyPoints = state.tasks.reduce((sum, task) => sum + (Number(task.storyPoints) || 0), 0);
   const hoursLogged = state.tasks.reduce((sum, task) => sum + (Number(task.hoursLogged) || 0), 0);
 
@@ -616,6 +544,7 @@ function createTaskCard(task) {
       <div>
         <span class="badge ${escapeHtml(task.priority)}">${escapeHtml(capitalize(task.priority))}</span>
         <span class="chip">${escapeHtml(task.type.toUpperCase())}</span>
+        <span class="chip">Tag: ${escapeHtml(task.tag || "Internal")}</span>
         <span class="chip">SP: ${Number(task.storyPoints) || 0}</span>
         <span class="chip">Hrs: ${formatHours(task.hoursLogged || 0)}</span>
       </div>
@@ -653,7 +582,7 @@ function exportAsJson() {
     exportedAt: new Date().toISOString(),
     summary: {
       totalIssues: state.tasks.length,
-      openIssues: state.tasks.filter((task) => task.status !== STATUS.DONE).length,
+      openIssues: state.tasks.filter((task) => task.status !== STATUS.DONE && task.status !== STATUS.BLOCKED).length,
       storyPoints: state.tasks.reduce((sum, task) => sum + (Number(task.storyPoints) || 0), 0),
       hoursLogged: `${formatHours(state.tasks.reduce((sum, task) => sum + (Number(task.hoursLogged) || 0), 0))}h`
     },
@@ -677,6 +606,7 @@ function exportAsCsv() {
     "Story Points",
     "Hours Logged",
     "Type",
+    "Tag",
     "Status"
   ];
 
@@ -689,6 +619,7 @@ function exportAsCsv() {
     String(task.storyPoints ?? 0),
     String(task.hoursLogged ?? 0),
     task.type,
+    task.tag || "Internal",
     statusLabel(task.status)
   ]);
 
@@ -726,6 +657,7 @@ function mapDbTaskToUiTask(row) {
     storyPoints: row.story_points || 0,
     hoursLogged: row.hours_logged || 0,
     type: row.type || "task",
+    tag: row.tag || "Internal",
     status: row.status
   };
 }
