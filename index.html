@@ -113,6 +113,14 @@
         <div class="column-body" id="in-reviewColumn"></div>
       </section>
 
+      <section class="column" data-status="blocked">
+        <header class="column-header blocked">
+          <h3>BLOCKED</h3>
+          <span class="count" id="count-blocked">0</span>
+        </header>
+        <div class="column-body" id="blockedColumn"></div>
+      </section>
+
       <section class="column" data-status="done">
         <header class="column-header done">
           <h3>DONE</h3>
@@ -144,6 +152,13 @@
         </label>
         <label>Story Points<input type="number" id="storyPointsInput" min="0" value="0"></label>
         <label>Hours Logged<input type="number" id="hoursLoggedInput" min="0" step="0.5" value="0"></label>
+        <label>Tag
+          <select id="tagInput" required>
+            <option value="Internal">Internal</option>
+            <option value="Client ready">Client ready</option>
+            <option value="Client support needed">Client support needed</option>
+          </select>
+        </label>
         <label>Type
           <select id="typeInput" required>
             <option value="feature">Feature</option>
@@ -156,6 +171,7 @@
             <option value="todo">TO DO</option>
             <option value="in-progress">IN PROGRESS</option>
             <option value="in-review">IN REVIEW</option>
+            <option value="blocked">BLOCKED</option>
             <option value="done">DONE</option>
           </select>
         </label>
@@ -168,6 +184,6 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8"></script>
-  <script src="script.js?v=10"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>
