@@ -512,10 +512,16 @@ function render() {
 function renderFilterOptions() {
   const selected = dom.assigneeFilter.value || "all";
   const assignees = [...new Set(state.tasks.map((task) => task.assignee))].sort();
+  const tags = [...new Set(state.tasks.map((task) => task.tag).filter(Boolean))].sort();
 
   dom.assigneeFilter.innerHTML = `<option value="all">All</option>${
     assignees.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")
   }`;
+  dom.tagFilter.innerHTML = `<option value="all">All Tags</option>${
+ tags.map((tag) =>
+   `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`
+ ).join("")
+}`;
   dom.assigneeFilter.value = assignees.includes(selected) ? selected : "all";
   state.filters.assignee = dom.assigneeFilter.value;
 }
@@ -524,7 +530,8 @@ function passesFilters(task) {
   const byAssignee = state.filters.assignee === "all" || task.assignee === state.filters.assignee;
   const byPriority = state.filters.priority === "all" || task.priority === state.filters.priority;
   const byType = state.filters.type === "all" || task.type === state.filters.type;
-  return byAssignee && byPriority && byType;
+  const byTag = state.filters.tag === "all" || task.tag === state.filters.tag;
+return byAssignee && byPriority && byType;
 }
 
 function renderBoard() {
